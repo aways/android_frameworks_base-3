@@ -549,12 +549,7 @@ class WallpaperManagerService extends IWallpaperManager.Stub {
     void switchUser(int userId, IRemoteCallback reply) {
         synchronized (mLock) {
             mCurrentUserId = userId;
-            WallpaperData wallpaper = mWallpaperMap.get(userId);
-            if (wallpaper == null) {
-                wallpaper = new WallpaperData(userId);
-                mWallpaperMap.put(userId, wallpaper);
-                loadSettingsLocked(userId);
-            }
+            WallpaperData wallpaper = getWallpaperData(userId);
             // Not started watching yet, in case wallpaper data was loaded for other reasons.
             if (wallpaper.wallpaperObserver == null) {
                 wallpaper.wallpaperObserver = new WallpaperObserver(wallpaper);
@@ -634,13 +629,8 @@ class WallpaperManagerService extends IWallpaperManager.Stub {
                 Binder.restoreCallingIdentity(ident);
             }
             for (UserInfo user: users) {
-                WallpaperData wd = mWallpaperMap.get(user.id);
-                if (wd == null) {
-                    // User hasn't started yet, so load her settings to peek at the wallpaper
-                    loadSettingsLocked(user.id);
-                    wd = mWallpaperMap.get(user.id);
-                }
-                if (wd != null && name.equals(wd.name)) {
+                WallpaperData wd = getWallpaperData(user.id);
+                if (name.equals(wd.name)) {
                     return true;
                 }
             }
@@ -704,14 +694,14 @@ class WallpaperManagerService extends IWallpaperManager.Stub {
 
     public int getWidthHint() throws RemoteException {
         synchronized (mLock) {
-            WallpaperData wallpaper = mWallpaperMap.get(UserHandle.getCallingUserId());
+            WallpaperData wallpaper = getWallpaperData(UserHandle.getCallingUserId());
             return wallpaper.width;
         }
     }
 
     public int getHeightHint() throws RemoteException {
         synchronized (mLock) {
-            WallpaperData wallpaper = mWallpaperMap.get(UserHandle.getCallingUserId());
+            WallpaperData wallpaper = getWallpaperData(UserHandle.getCallingUserId());
             return wallpaper.height;
         }
     }
@@ -728,7 +718,7 @@ class WallpaperManagerService extends IWallpaperManager.Stub {
             } else {
                 wallpaperUserId = UserHandle.getUserId(callingUid);
             }
-            WallpaperData wallpaper = mWallpaperMap.get(wallpaperUserId);
+            WallpaperData wallpaper = getWallpaperData(wallpaperUserId);
             try {
                 if (outParams != null) {
                     outParams.putInt("width", wallpaper.width);
@@ -751,7 +741,7 @@ class WallpaperManagerService extends IWallpaperManager.Stub {
     public WallpaperInfo getWallpaperInfo() {
         int userId = UserHandle.getCallingUserId();
         synchronized (mLock) {
-            WallpaperData wallpaper = mWallpaperMap.get(userId);
+            WallpaperData wallpaper = getWallpaperData(userId);
             if (wallpaper.connection != null) {
                 return wallpaper.connection.mInfo;
             }
@@ -1311,6 +1301,17 @@ class WallpaperManagerService extends IWallpaperManager.Stub {
             }
         }
         return false;
+    }
+
+    private WallpaperData getWallpaperData(int userId) {
+        WallpaperData wallpaper = mWallpaperMap.get(userId);
+        if (wallpaper == null) {
+            // User hasn't started yet, so load her settings to set desired size.
+            Slog.w(TAG, "Wallpaper not yet initialized, loading settings for user " + userId);
+            loadSettingsLocked(userId);
+            wallpaper = mWallpaperMap.get(userId);
+        }
+        return wallpaper;
     }
 
     @Override
