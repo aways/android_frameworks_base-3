@@ -6986,7 +6986,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                         // Store everything else on the appropriate scrap heap.
                         if (multipleScraps) {
                             scrapViews = mScrapViews[whichScrap];
-                            
+                        }
 
                         victim.dispatchStartTemporaryDetach();
                         lp.scrappedFromPosition = mFirstActivePosition + i;
