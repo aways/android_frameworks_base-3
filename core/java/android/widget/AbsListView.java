@@ -2114,8 +2114,6 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
         mInLayout = false;
 
         mOverscrollMax = (b - t) / OVERSCROLL_LIMIT_DIVISOR;
-        mHeight = getHeight();
-        mWidth = getWidth();
 
         // TODO: Move somewhere sane. This doesn't belong in onLayout().
         if (mFastScroller != null) {
@@ -6988,8 +6986,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                         // Store everything else on the appropriate scrap heap.
                         if (multipleScraps) {
                             scrapViews = mScrapViews[whichScrap];
-                            }
-                        }
+                            
 
                         victim.dispatchStartTemporaryDetach();
                         lp.scrappedFromPosition = mFirstActivePosition + i;
