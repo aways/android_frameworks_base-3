@@ -345,9 +345,7 @@ interface ITelephony {
      */
     void setCellInfoListRate(int rateInMillis);
 
-    int getLteOnGsmMode();
-
-   /**
+    /**
      * Put a call on hold.
      */
      void toggleHold();
@@ -389,5 +387,7 @@ interface ITelephony {
        * Unregister a callback.
        */
       void removeListener(ITelephonyListener listener);
+
+      int getLteOnGsmMode();
 }
 
